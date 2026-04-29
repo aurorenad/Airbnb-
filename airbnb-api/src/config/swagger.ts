@@ -15,6 +15,10 @@ const options: swaggerJsdoc.Options = {
         url: "http://localhost:3000",
         description: "Development server",
       },
+      {
+        url: "https://airbnb-1c4y3dz0j-just-me11.vercel.app",  
+        description: "Production server",
+      }
     ],
     components: {
       securitySchemes: {
@@ -33,7 +37,8 @@ const swaggerSpec = swaggerJsdoc(options);
 
 export function setupSwagger(app: Express) {
   // Mount Swagger UI at /api-docs
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use("/api-docs", swaggerUi.serve);
+  app.get("/api-docs", swaggerUi.setup(swaggerSpec));
 
   // Expose raw JSON spec at /api-docs.json
   app.get("/api-docs.json", (req, res) => {
