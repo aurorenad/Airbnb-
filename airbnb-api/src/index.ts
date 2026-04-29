@@ -31,14 +31,15 @@ app.use((req: Request, res: Response) => {
 
 app.use(errorHandler);
 
-const main = async (): Promise<void> => {
-  await connectDB();
+connectDB().catch((error: unknown) => {
+  console.error("Failed to connect to database", error);
+});
+
+// For local development
+if (process.env["NODE_ENV"] !== "production") {
   app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
-};
+}
 
-main().catch((error: unknown) => {
-  console.error("Failed to start server", error);
-  process.exit(1);
-});
+export default app;

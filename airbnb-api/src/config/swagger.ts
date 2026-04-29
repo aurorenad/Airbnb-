@@ -36,15 +36,17 @@ const options: swaggerJsdoc.Options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 export function setupSwagger(app: Express) {
-  // Mount Swagger UI at /api-docs
   app.use("/api-docs", swaggerUi.serve);
-  app.get("/api-docs", swaggerUi.setup(swaggerSpec));
+  app.get("/api-docs", swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: "Airbnb API Docs",
+    swaggerOptions: {
+      persistAuthorization: true,
+    }
+  }));
 
   // Expose raw JSON spec at /api-docs.json
   app.get("/api-docs.json", (req, res) => {
     res.json(swaggerSpec);
   });
-
-  console.log("Swagger docs available at http://localhost:3000/api-docs");
-  console.log("Raw OpenAPI spec available at http://localhost:3000/api-docs.json");
 }
