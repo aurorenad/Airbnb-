@@ -3,7 +3,7 @@ import { ListingType } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { createListingSchema, updateListingSchema } from "../validators/listing.validator.js";
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
-import { deleteCache, deleteCacheByPattern } from "../config/cache.js";
+import { getCache, setCache, deleteCache, deleteCacheByPattern } from "../config/cache.js";
 
 const parseId = (value: string | string[] | undefined): number =>
   Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
@@ -164,37 +164,56 @@ export const getAllListings = async (req: Request, res: Response, next: NextFunc
       whereClause.pricePerNight = { lte: maxPrice };
     }
 
-    const listings = await prisma.listing.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        location: true,
-        pricePerNight: true,
-        guests: true,
-        type: true,
-        amenities: true,
-        rating: true,
-        createdAt: true,
-        updatedAt: true,
-        hostId: true,
-        host: {
-          select: {
-            name: true,
-            avatar: true,
+    const cacheKey = `listings:page:${page}:limit:${limit}:location:${location || ""}:type:${type || ""}:maxPrice:${maxPrice || ""}:sortBy:${sortByRaw}:order:${orderRaw}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    const [listings, total] = await Promise.all([
+      prisma.listing.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          location: true,
+          pricePerNight: true,
+          guests: true,
+          type: true,
+          amenities: true,
+          rating: true,
+          createdAt: true,
+          updatedAt: true,
+          hostId: true,
+          host: {
+            select: {
+              name: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: { bookings: true },
           },
         },
-        _count: {
-          select: { bookings: true },
-        },
-      },
-      orderBy: { [sortByRaw]: orderRaw },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+        orderBy: { [sortByRaw]: orderRaw },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.listing.count({ where: whereClause }),
+    ]);
 
-    res.json(listings);
+    const totalPages = Math.ceil(total / limit);
+
+    const response = {
+      data: listings,
+      meta: { total, page, limit, totalPages },
+    };
+
+    setCache(cacheKey, response, 60);
+
+    res.json(response);
   }
   catch(error){
     next(error);
@@ -258,8 +277,9 @@ export const createListing = async (req: AuthRequest, res: Response, next: NextF
     },
   });
 
-  // Invalidate stats cache
+  // Invalidate stats and listings cache
   deleteCacheByPattern("stats:");
+  deleteCacheByPattern("listings:");
 
   res.status(201).json(listing);
   }catch(error){
@@ -301,8 +321,9 @@ export const updateListing = async (req: AuthRequest, res: Response, next: NextF
     data: payload,
   });
 
-  // Invalidate stats cache
+  // Invalidate stats and listings cache
   deleteCacheByPattern("stats:");
+  deleteCacheByPattern("listings:");
 
   res.json(listing);
   } catch (error) {
@@ -335,8 +356,9 @@ export const deleteListing = async (req: AuthRequest, res: Response, next: NextF
 
   await prisma.listing.delete({ where: { id } });
 
-  // Invalidate stats cache
+  // Invalidate stats and listings cache
   deleteCacheByPattern("stats:");
+  deleteCacheByPattern("listings:");
 
   res.status(204).send();
   }catch(error){

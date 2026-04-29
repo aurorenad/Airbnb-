@@ -296,7 +296,7 @@ export const deleteBooking = async (req: AuthRequest, res: Response, next: NextF
     data: { status: BookingStatus.CANCELLED },
   });
 
-  res.json(cancelled);
+  res.status(200).json({ message: "Booking cancelled successfully" });
 
   // Send cancellation email (non-blocking)
   const bookingWithDetails = await prisma.booking.findUnique({

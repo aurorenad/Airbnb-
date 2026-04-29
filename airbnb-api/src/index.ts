@@ -32,9 +32,25 @@ setupSwagger(app);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/listings", listingsRouter);
-app.use("/bookings", strictLimiter, bookingsRouter);
+// Apply strict rate limiter to all POST routes
+app.use((req: Request, res: Response, next: express.NextFunction) => {
+  if (req.method === "POST") {
+    return strictLimiter(req, res, next);
+  }
+  next();
+});
+
+app.use("/bookings", bookingsRouter);
 app.use("/", uploadRouter);
 app.use("/", reviewsRouter);
+
+// Root endpoint
+app.get("/", (req: Request, res: Response) => {
+  res.json({
+    message: "Welcome to the Airbnb API",
+    docs: "/api-docs",
+  });
+});
 
 // 404 handler
 app.use((req: Request, res: Response) => {

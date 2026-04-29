@@ -9,18 +9,44 @@ import { welcomeEmail } from "../templates/emails.js";
 const parseId = (value: string | string[] | undefined): number =>
   Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
 
-export const getAllUsers = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try{
-    const users = await prisma.user.findMany({
-    include: {
-      _count: {
-        select: { listings: true },
-      },
-    },
-  });
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const pageRaw = req.query.page?.toString() ?? "1";
+    const limitRaw = req.query.limit?.toString() ?? "10";
 
-  res.json(users);
-  }catch (error) {
+    const page = Number.parseInt(pageRaw, 10);
+    const limit = Number.parseInt(limitRaw, 10);
+
+    if (
+      !Number.isInteger(page) ||
+      page <= 0 ||
+      !Number.isInteger(limit) ||
+      limit <= 0
+    ) {
+      res.status(400).json({ message: "page and limit must be positive integers" });
+      return;
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        include: {
+          _count: {
+            select: { listings: true },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.user.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      data: users,
+      meta: { total, page, limit, totalPages },
+    });
+  } catch (error) {
     next(error);
   }
 };

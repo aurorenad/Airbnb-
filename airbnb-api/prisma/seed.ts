@@ -148,6 +148,7 @@ async function main() {
       checkOut: nextWeek,
       totalPrice: 200.0 * 6, // 6 nights
       status: BookingStatus.CONFIRMED,
+      guests: 2,
       guestId: guest1.id,
       listingId: listing1.id,
     },
@@ -164,6 +165,7 @@ async function main() {
       checkOut: inThreeWeeks,
       totalPrice: 150.0 * 7, // 7 nights
       status: BookingStatus.PENDING,
+      guests: 1,
       guestId: guest2.id,
       listingId: listing4.id,
     },
@@ -180,6 +182,7 @@ async function main() {
       checkOut: inAMonthPlusThreeDays,
       totalPrice: 800.0 * 3, // 3 nights
       status: BookingStatus.CONFIRMED,
+      guests: 4,
       guestId: guest3.id,
       listingId: listing3.id,
     },
