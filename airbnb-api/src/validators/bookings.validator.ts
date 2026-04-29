@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 export const createBookingSchema = z.object({
-  listingId: z.number().int().positive(),
+  userId: z.number().int().positive("User ID must be a positive integer"),
+  listingId: z.number().int().positive("Listing ID must be a positive integer"),
   checkIn: z.string().datetime("Invalid checkIn date"),
   checkOut: z.string().datetime("Invalid checkOut date"),
+  guests: z.number().int().positive("Guests must be a positive integer"),
 }).refine(
   (data) => new Date(data.checkIn) < new Date(data.checkOut),
   { message: "checkIn must be before checkOut", path: ["checkIn"] }

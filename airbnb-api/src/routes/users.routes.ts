@@ -7,6 +7,7 @@ import {
   getUserListings,
   getUserBookings,
 } from "../controllers/users.controller.js";
+import { getUsersStats } from "../controllers/stats.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -71,6 +72,27 @@ router.get("/", authenticate, getAllUsers);
 
 /**
  * @swagger
+ * /users/stats:
+ *   get:
+ *     summary: Get user statistics
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: User statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalUsers:
+ *                   type: integer
+ *                 byRole:
+ *                   type: array
+ */
+router.get("/stats", getUsersStats);
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get user by ID
@@ -96,6 +118,55 @@ router.get("/", authenticate, getAllUsers);
  *         $ref: '#/components/schemas/ErrorResponse'
  */
 router.get("/:id", authenticate, getUserById);
+
+/**
+ * @swagger
+ * /users/{id}/bookings:
+ *   get:
+ *     summary: Get all bookings for a user (paginated)
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Paginated bookings for the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Booking'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *       404:
+ *         $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/:id/bookings", getUserBookings);
 
 /**
  * @swagger

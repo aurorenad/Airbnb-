@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { authenticate } from "../middlewares/auth.middleware.js";
+import {
+  createReview,
+  getListingReviews,
+  deleteReview,
+} from "../controllers/reviews.controller.js";
 
 const router = Router();
 
@@ -57,7 +61,7 @@ const router = Router();
  * @swagger
  * /listings/{id}/reviews:
  *   get:
- *     summary: Get all reviews for a listing
+ *     summary: Get all reviews for a listing (paginated)
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
@@ -103,8 +107,6 @@ const router = Router();
  *   post:
  *     summary: Create a review for a listing
  *     tags: [Reviews]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -127,8 +129,6 @@ const router = Router();
  *               $ref: '#/components/schemas/Review'
  *       400:
  *         $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         $ref: '#/components/schemas/ErrorResponse'
  */
@@ -139,8 +139,6 @@ const router = Router();
  *   delete:
  *     summary: Delete a review
  *     tags: [Reviews]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -151,22 +149,14 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Review deleted successfully
- *       401:
- *         $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         $ref: '#/components/schemas/ErrorResponse'
  */
 
-router.get("/listings/:id/reviews", (req, res) => {
-  res.status(501).json({ message: "Not implemented" });
-});
+router.get("/listings/:id/reviews", getListingReviews);
 
-router.post("/listings/:id/reviews", authenticate, (req, res) => {
-  res.status(501).json({ message: "Not implemented" });
-});
+router.post("/listings/:id/reviews", createReview);
 
-router.delete("/reviews/:id", authenticate, (req, res) => {
-  res.status(501).json({ message: "Not implemented" });
-});
+router.delete("/reviews/:id", deleteReview);
 
 export default router;

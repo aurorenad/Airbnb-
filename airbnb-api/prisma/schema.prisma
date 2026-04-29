@@ -47,7 +47,10 @@ model User {
   resetTokenExpiry DateTime?
   listings  Listing[]
   bookings  Booking[]
-  
+  reviews   Review[]
+
+  @@index([name])
+  @@index([role])
 }
 
 model Listing {
@@ -65,9 +68,12 @@ model Listing {
   hostId        Int
   host          User        @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings      Booking[]
+  reviews       Review[]
   photos        ListingPhoto[]
 
+  @@index([hostId])
   @@index([location])
+  @@index([type])
   @@index([pricePerNight])
 }
 
@@ -83,6 +89,7 @@ model Booking {
   id         Int           @id @default(autoincrement())
   checkIn    DateTime
   checkOut   DateTime
+  guests     Int
   totalPrice Float
   status     BookingStatus @default(PENDING)
   createdAt  DateTime      @default(now())
@@ -90,4 +97,22 @@ model Booking {
   listingId  Int
   guest      User          @relation(fields: [guestId], references: [id], onDelete: Cascade)
   listing    Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([guestId])
+  @@index([listingId])
+  @@index([status])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String
+  userId    Int
+  listingId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([listingId])
 }

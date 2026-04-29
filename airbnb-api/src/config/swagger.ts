@@ -1,6 +1,11 @@
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import type { Express } from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -16,7 +21,7 @@ const options: swaggerJsdoc.Options = {
         description: "Development server",
       },
       {
-        url: "https://airbnb-1c4y3dz0j-just-me11.vercel.app",  
+        url: "https://airbnb-l9mthxh9w-just-me11.vercel.app",
         description: "Production server",
       }
     ],
@@ -30,7 +35,12 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ["./src/routes/*.ts", "./src/models/*.ts"],
+  apis: [
+    path.join(__dirname, "../routes/*.ts"),
+    path.join(__dirname, "../routes/*.js"),
+    path.join(__dirname, "../models/*.ts"),
+    path.join(__dirname, "../models/*.js"),
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
@@ -45,7 +55,6 @@ export function setupSwagger(app: Express) {
     }
   }));
 
-  // Expose raw JSON spec at /api-docs.json
   app.get("/api-docs.json", (req, res) => {
     res.json(swaggerSpec);
   });

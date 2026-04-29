@@ -1,11 +1,13 @@
 import { Router } from "express";
 import {
   getAllListings,
+  searchListings,
   getListingById,
   createListing,
   updateListing,
   deleteListing,
 } from "../controllers/listings.controller.js";
+import { getListingsStats } from "../controllers/stats.controller.js";
 import { authenticate, requireHost } from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -153,7 +155,7 @@ router.get("/", getAllListings);
  * @swagger
  * /listings/search:
  *   get:
- *     summary: Search listings
+ *     summary: Search listings by location, type, price range, guests
  *     tags: [Listings]
  *     parameters:
  *       - in: query
@@ -164,17 +166,53 @@ router.get("/", getAllListings);
  *         name: type
  *         schema:
  *           $ref: '#/components/schemas/ListingType'
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: guests
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
  *     responses:
  *       200:
  *         description: Search results
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Listing'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Listing'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
  */
-router.get("/search", getAllListings);
+router.get("/search", searchListings);
 
 /**
  * @swagger
@@ -195,13 +233,11 @@ router.get("/search", getAllListings);
  *                 averagePrice:
  *                   type: number
  *                 byLocation:
- *                   type: object
+ *                   type: array
  *                 byType:
- *                   type: object
+ *                   type: array
  */
-router.get("/stats", (req, res) => {
-  res.status(501).json({ message: "Not implemented" });
-});
+router.get("/stats", getListingsStats);
 
 /**
  * @swagger

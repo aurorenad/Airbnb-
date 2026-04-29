@@ -9,23 +9,51 @@ import { bookingConfirmationEmail, bookingCancellationEmail } from "../templates
 const parseId = (value: string | string[] | undefined): number =>
   Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
 
-export const getAllBookings = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getAllBookings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const bookings = await prisma.booking.findMany({
-      include: {
-        guest: {
-          select: { name: true },
-        },
-      listing: {
-        select: { title: true },
-      },
-    },
-  });
+    const pageRaw = req.query.page?.toString() ?? "1";
+    const limitRaw = req.query.limit?.toString() ?? "10";
 
-  res.json(bookings);
-}  catch (error) {
+    const page = Number.parseInt(pageRaw, 10);
+    const limit = Number.parseInt(limitRaw, 10);
+
+    if (
+      !Number.isInteger(page) ||
+      page <= 0 ||
+      !Number.isInteger(limit) ||
+      limit <= 0
+    ) {
+      res.status(400).json({ message: "page and limit must be positive integers" });
+      return;
+    }
+
+    // Fetch bookings and count in parallel
+    const [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        include: {
+          guest: {
+            select: { name: true },
+          },
+          listing: {
+            select: { title: true, location: true },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.booking.count(),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      data: bookings,
+      meta: { total, page, limit, totalPages },
+    });
+  } catch (error) {
     next(error);
-}
+  }
 };
 
 export const getBookingById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -61,19 +89,85 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+/**
+ * GET /users/:id/bookings - Get all bookings for a user (paginated)
+ */
+export const getUserBookings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = parseId(req.params.id);
+    const pageRaw = req.query.page?.toString() ?? "1";
+    const limitRaw = req.query.limit?.toString() ?? "10";
+
+    if (Number.isNaN(userId)) {
+      res.status(400).json({ message: "Invalid user id" });
+      return;
+    }
+
+    const page = Number.parseInt(pageRaw, 10);
+    const limit = Number.parseInt(limitRaw, 10);
+
+    if (
+      !Number.isInteger(page) ||
+      page <= 0 ||
+      !Number.isInteger(limit) ||
+      limit <= 0
+    ) {
+      res.status(400).json({ message: "page and limit must be positive integers" });
+      return;
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Fetch bookings and count in parallel
+    const [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where: { guestId: userId },
+        include: {
+          listing: {
+            select: { id: true, title: true, location: true },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.booking.count({ where: { guestId: userId } }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      data: bookings,
+      meta: { total, page, limit, totalPages },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createBooking = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const parsed = createBookingSchema.parse(req.body);
-    const { listingId, checkIn, checkOut } = parsed;
-
-  if (!req.userId) {
-    res.status(401).json({ message: "Missing or invalid token" });
-    return;
-  }
+    const { userId, listingId, checkIn, checkOut, guests } = parsed;
 
   const listing = await prisma.listing.findUnique({ where: { id: listingId } });
   if (!listing) {
     res.status(404).json({ message: "Listing not found" });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
     return;
   }
 
@@ -99,33 +193,39 @@ export const createBooking = async (req: AuthRequest, res: Response, next: NextF
 
   const booking = await prisma.booking.create({
     data: {
-      guestId: req.userId,
+      guestId: userId,
       listingId,
       checkIn: checkInDate,
       checkOut: checkOutDate,
+      guests,
       totalPrice,
       status: BookingStatus.PENDING,
+    },
+    include: {
+      guest: {
+        select: { name: true, email: true },
+      },
+      listing: {
+        select: { title: true, location: true },
+      },
     },
   });
 
   res.status(201).json(booking);
 
   // Send confirmation email (non-blocking)
-  const guest = await prisma.user.findUnique({ where: { id: req.userId } });
-  if (guest) {
-    sendEmail(
-      guest.email,
-      "Booking Confirmation",
-      bookingConfirmationEmail(
-        guest.name,
-        listing.title,
-        listing.location,
-        checkInDate.toDateString(),
-        checkOutDate.toDateString(),
-        totalPrice
-      )
-    ).catch((err) => console.error("Failed to send booking confirmation email:", err));
-  }
+  sendEmail(
+    user.email,
+    "Booking Confirmation",
+    bookingConfirmationEmail(
+      user.name,
+      listing.title,
+      listing.location,
+      checkInDate.toDateString(),
+      checkOutDate.toDateString(),
+      totalPrice
+    )
+  ).catch((err) => console.error("Failed to send booking confirmation email:", err));
   } catch (error) {
     next(error);
   }

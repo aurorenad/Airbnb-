@@ -3,9 +3,116 @@ import { ListingType } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { createListingSchema, updateListingSchema } from "../validators/listing.validator.js";
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
+import { deleteCache, deleteCacheByPattern } from "../config/cache.js";
 
 const parseId = (value: string | string[] | undefined): number =>
   Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
+
+/**
+ * GET /listings/search - Search listings by location, type, price range, guests
+ */
+export const searchListings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const location = req.query.location?.toString();
+    const type = req.query.type?.toString().toUpperCase();
+    const minPriceRaw = req.query.minPrice?.toString();
+    const maxPriceRaw = req.query.maxPrice?.toString();
+    const guestsRaw = req.query.guests?.toString();
+    const pageRaw = req.query.page?.toString() ?? "1";
+    const limitRaw = req.query.limit?.toString() ?? "10";
+
+    const page = Number.parseInt(pageRaw, 10);
+    const limit = Number.parseInt(limitRaw, 10);
+
+    if (
+      !Number.isInteger(page) ||
+      page <= 0 ||
+      !Number.isInteger(limit) ||
+      limit <= 0
+    ) {
+      res.status(400).json({ message: "page and limit must be positive integers" });
+      return;
+    }
+
+    const minPrice = minPriceRaw ? Number.parseFloat(minPriceRaw) : undefined;
+    const maxPrice = maxPriceRaw ? Number.parseFloat(maxPriceRaw) : undefined;
+    const guests = guestsRaw ? Number.parseInt(guestsRaw, 10) : undefined;
+
+    if (minPriceRaw && Number.isNaN(minPrice)) {
+      res.status(400).json({ message: "minPrice must be a number" });
+      return;
+    }
+
+    if (maxPriceRaw && Number.isNaN(maxPrice)) {
+      res.status(400).json({ message: "maxPrice must be a number" });
+      return;
+    }
+
+    if (guestsRaw && Number.isNaN(guests)) {
+      res.status(400).json({ message: "guests must be a number" });
+      return;
+    }
+
+    if (type && !Object.values(ListingType).includes(type as ListingType)) {
+      res.status(400).json({ message: "Invalid listing type" });
+      return;
+    }
+
+    // Build where clause with conditional filters
+    const whereClause: Record<string, unknown> = {};
+
+    if (location) {
+      whereClause.location = { contains: location, mode: "insensitive" };
+    }
+
+    if (type) {
+      whereClause.type = type as ListingType;
+    }
+
+    if (typeof minPrice === "number") {
+      if (!whereClause.pricePerNight) whereClause.pricePerNight = {};
+      (whereClause.pricePerNight as Record<string, unknown>).gte = minPrice;
+    }
+
+    if (typeof maxPrice === "number") {
+      if (!whereClause.pricePerNight) whereClause.pricePerNight = {};
+      (whereClause.pricePerNight as Record<string, unknown>).lte = maxPrice;
+    }
+
+    if (typeof guests === "number") {
+      whereClause.guests = { gte: guests };
+    }
+
+    // Fetch listings and count in parallel
+    const [listings, total] = await Promise.all([
+      prisma.listing.findMany({
+        where: whereClause,
+        include: {
+          host: {
+            select: { name: true, email: true },
+          },
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.listing.count({ where: whereClause }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      data: listings,
+      meta: { total, page, limit, totalPages },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getAllListings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
@@ -151,6 +258,9 @@ export const createListing = async (req: AuthRequest, res: Response, next: NextF
     },
   });
 
+  // Invalidate stats cache
+  deleteCacheByPattern("stats:");
+
   res.status(201).json(listing);
   }catch(error){
       next(error);
@@ -191,6 +301,9 @@ export const updateListing = async (req: AuthRequest, res: Response, next: NextF
     data: payload,
   });
 
+  // Invalidate stats cache
+  deleteCacheByPattern("stats:");
+
   res.json(listing);
   } catch (error) {
     next(error);
@@ -221,6 +334,10 @@ export const deleteListing = async (req: AuthRequest, res: Response, next: NextF
   }
 
   await prisma.listing.delete({ where: { id } });
+
+  // Invalidate stats cache
+  deleteCacheByPattern("stats:");
+
   res.status(204).send();
   }catch(error){
     next(error);

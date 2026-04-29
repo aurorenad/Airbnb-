@@ -4,10 +4,9 @@ import {
   deleteBooking,
   getAllBookings,
   getBookingById,
-  updateBookingStatus,
+  getUserBookings,
 } from "../controllers/bookings.controller.js";
-import { getUserBookings } from "../controllers/users.controller.js";
-import { authenticate, requireGuest } from "../middlewares/auth.middleware.js";
+import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -111,7 +110,7 @@ const router = Router();
  *       401:
  *         $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/", authenticate, getAllBookings);
+router.get("/", getAllBookings);
 
 /**
  * @swagger
@@ -119,8 +118,6 @@ router.get("/", authenticate, getAllBookings);
  *   get:
  *     summary: Get booking by ID
  *     tags: [Bookings]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -134,53 +131,10 @@ router.get("/", authenticate, getAllBookings);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Booking'
- *       401:
- *         $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/:id", authenticate, getBookingById);
-
-/**
- * @swagger
- * /users/{id}/bookings:
- *   get:
- *     summary: Get all bookings for a user
- *     tags: [Bookings]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: User ID
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *     responses:
- *       200:
- *         description: Paginated bookings
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Booking'
- *       401:
- *         $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         $ref: '#/components/schemas/ErrorResponse'
- */
-router.get("/users/:id/bookings", authenticate, getUserBookings);
+router.get("/:id", getBookingById);
 
 /**
  * @swagger
@@ -189,8 +143,6 @@ router.get("/users/:id/bookings", authenticate, getUserBookings);
  *     summary: Create a new booking
  *     description: total is auto-calculated from pricePerNight × nights
  *     tags: [Bookings]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -206,12 +158,10 @@ router.get("/users/:id/bookings", authenticate, getUserBookings);
  *               $ref: '#/components/schemas/Booking'
  *       400:
  *         $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/", authenticate, requireGuest, createBooking);
+router.post("/", createBooking);
 
 /**
  * @swagger
@@ -219,8 +169,6 @@ router.post("/", authenticate, requireGuest, createBooking);
  *   delete:
  *     summary: Cancel a booking
  *     tags: [Bookings]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -230,11 +178,9 @@ router.post("/", authenticate, requireGuest, createBooking);
  *     responses:
  *       200:
  *         description: Booking cancelled
- *       401:
- *         $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete("/:id", authenticate, deleteBooking);
+router.delete("/:id", deleteBooking);
 
 export default router;
