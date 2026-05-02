@@ -1,3 +1,5 @@
+/// <reference types="express" />
+/// <reference types="multer" />
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 

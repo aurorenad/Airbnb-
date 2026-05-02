@@ -1,3 +1,5 @@
+/// <reference types="express" />
+/// <reference types="multer" />
 import type { NextFunction, Response } from "express";
 import prisma from "../config/prisma.js";
 import { uploadToCloudinary, deleteFromCloudinary, getOptimizedUrl } from "../config/cloudinary.js";
