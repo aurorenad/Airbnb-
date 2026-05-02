@@ -2,8 +2,10 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
-  userId?: string;
-  role?: string;
+  userId?: string | undefined;
+  role?: string | undefined;
+  file?: Express.Multer.File | undefined;
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] } | undefined;
 }
 
 type JwtPayload = { userId: string; role: string };

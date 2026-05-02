@@ -1,4 +1,4 @@
-import { BookingStatus } from './bookingStatus.js';
+import { BookingStatus } from './BookingStatus.js';
 import type { Listing } from './listing.model.js';
 import type { User } from './user.model.js';
 
