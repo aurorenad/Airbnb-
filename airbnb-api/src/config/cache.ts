@@ -1,4 +1,4 @@
-// In-memory cache store
+
 interface CacheEntry {
   data: any;
   expiresAt: number;
@@ -6,10 +6,7 @@ interface CacheEntry {
 
 const cacheStore = new Map<string, CacheEntry>();
 
-/**
- * Get cached data by key
- * Returns null if not found or expired
- */
+
 export const getCache = (key: string): any | null => {
   const entry = cacheStore.get(key);
   
@@ -17,7 +14,6 @@ export const getCache = (key: string): any | null => {
     return null;
   }
   
-  // Check if expired
   if (Date.now() > entry.expiresAt) {
     cacheStore.delete(key);
     return null;

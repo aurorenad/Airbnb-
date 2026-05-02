@@ -5,8 +5,8 @@ import { createListingSchema, updateListingSchema } from "../validators/listing.
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
 import { getCache, setCache, deleteCache, deleteCacheByPattern } from "../config/cache.js";
 
-const parseId = (value: string | string[] | undefined): number =>
-  Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
+const parseId = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? value[0] ?? "" : value ?? "";
 
 /**
  * GET /listings/search - Search listings by location, type, price range, guests
@@ -222,11 +222,7 @@ export const getAllListings = async (req: Request, res: Response, next: NextFunc
 
 export const getListingById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
-      const id = parseId(req.params.id);
-      if (Number.isNaN(id)) {
-        res.status(400).json({ message: "Invalid listing id" });
-        return;
-      }
+    const id = parseId(req.params.id);
 
       const listing = await prisma.listing.findUnique({
         where: { id },

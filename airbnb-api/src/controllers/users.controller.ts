@@ -6,8 +6,8 @@ import bcrypt from "bcrypt";
 import { sendEmail } from "../config/email.js";
 import { welcomeEmail } from "../templates/emails.js";
 
-const parseId = (value: string | string[] | undefined): number =>
-  Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
+const parseId = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? value[0] ?? "" : value ?? "";
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -54,10 +54,6 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 export const getUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid user id" });
-    return;
-  }
 
   const roleOnly = await prisma.user.findUnique({
     where: { id },
@@ -107,10 +103,6 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 export const getUserListings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid user id" });
-    return;
-  }
 
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
@@ -128,10 +120,6 @@ export const getUserListings = async (req: Request, res: Response, next: NextFun
 export const getUserBookings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid user id" });
-    return;
-  }
 
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
@@ -192,10 +180,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 export const updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid user id" });
-    return;
-  }
 
   const current = await prisma.user.findFirst({ where: { id } });
   if (!current) {
@@ -222,10 +206,6 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 export const deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid user id" });
-    return;
-  }
 
   const current = await prisma.user.findFirst({ where: { id } });
   if (!current) {

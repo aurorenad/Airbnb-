@@ -31,7 +31,7 @@ enum BookingStatus {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid())
   name      String
   email     String    @unique
   username  String    @unique
@@ -54,7 +54,7 @@ model User {
 }
 
 model Listing {
-  id            Int         @id @default(autoincrement())
+  id            String      @id @default(uuid())
   title         String
   description   String
   location      String
@@ -65,7 +65,7 @@ model Listing {
   rating        Float?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  hostId        Int
+  hostId        String
   host          User        @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings      Booking[]
   reviews       Review[]
@@ -78,23 +78,23 @@ model Listing {
 }
 
 model ListingPhoto {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(uuid())
   url       String
   publicId  String
-  listingId Int
+  listingId String
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }
 
 model Booking {
-  id         Int           @id @default(autoincrement())
+  id         String        @id @default(uuid())
   checkIn    DateTime
   checkOut   DateTime
   guests     Int
   totalPrice Float
   status     BookingStatus @default(PENDING)
   createdAt  DateTime      @default(now())
-  guestId    Int
-  listingId  Int
+  guestId    String
+  listingId  String
   guest      User          @relation(fields: [guestId], references: [id], onDelete: Cascade)
   listing    Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
@@ -104,11 +104,11 @@ model Booking {
 }
 
 model Review {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   rating    Int
   comment   String
-  userId    Int
-  listingId Int
+  userId    String
+  listingId String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

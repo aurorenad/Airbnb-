@@ -6,8 +6,8 @@ import type { AuthRequest } from "../middlewares/auth.middleware.js";
 import { sendEmail } from "../config/email.js";
 import { bookingConfirmationEmail, bookingCancellationEmail } from "../templates/emails.js";
 
-const parseId = (value: string | string[] | undefined): number =>
-  Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
+const parseId = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? value[0] ?? "" : value ?? "";
 
 export const getAllBookings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -101,11 +101,6 @@ export const getUserBookings = async (
     const userId = parseId(req.params.id);
     const pageRaw = req.query.page?.toString() ?? "1";
     const limitRaw = req.query.limit?.toString() ?? "10";
-
-    if (Number.isNaN(userId)) {
-      res.status(400).json({ message: "Invalid user id" });
-      return;
-    }
 
     const page = Number.parseInt(pageRaw, 10);
     const limit = Number.parseInt(limitRaw, 10);

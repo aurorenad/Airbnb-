@@ -2,11 +2,11 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
-  userId?: number;
+  userId?: string;
   role?: string;
 }
 
-type JwtPayload = { userId: number; role: string };
+type JwtPayload = { userId: string; role: string };
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers["authorization"];

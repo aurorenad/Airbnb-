@@ -3,8 +3,8 @@ import prisma from "../config/prisma.js";
 import { uploadToCloudinary, deleteFromCloudinary, getOptimizedUrl } from "../config/cloudinary.js";
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
 
-const parseId = (value: string | string[] | undefined): number =>
-  Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
+const parseId = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? value[0] ?? "" : value ?? "";
 
 export const uploadAvatar = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {

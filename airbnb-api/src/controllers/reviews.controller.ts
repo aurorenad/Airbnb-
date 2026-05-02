@@ -4,8 +4,8 @@ import { createReviewSchema } from "../validators/review.validator.js";
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
 import { getCache, setCache, deleteCache, deleteCacheByPattern } from "../config/cache.js";
 
-const parseId = (value: string | string[] | undefined): number =>
-  Number.parseInt(Array.isArray(value) ? value[0] ?? "" : value ?? "", 10);
+const parseId = (value: string | string[] | undefined): string =>
+  Array.isArray(value) ? value[0] ?? "" : value ?? "";
 
 /**
  * POST /listings/:id/reviews - Add a review to a listing
@@ -17,11 +17,6 @@ export const createReview = async (
 ): Promise<void> => {
   try {
     const listingId = parseId(req.params.id);
-
-    if (Number.isNaN(listingId)) {
-      res.status(400).json({ message: "Invalid listing id" });
-      return;
-    }
 
     const parsed = createReviewSchema.parse(req.body);
     const { userId, rating, comment } = parsed;
@@ -75,11 +70,6 @@ export const getListingReviews = async (
     const listingId = parseId(req.params.id);
     const pageRaw = req.query.page?.toString() ?? "1";
     const limitRaw = req.query.limit?.toString() ?? "10";
-
-    if (Number.isNaN(listingId)) {
-      res.status(400).json({ message: "Invalid listing id" });
-      return;
-    }
 
     const page = Number.parseInt(pageRaw, 10);
     const limit = Number.parseInt(limitRaw, 10);
@@ -151,11 +141,6 @@ export const deleteReview = async (
 ): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-
-    if (Number.isNaN(id)) {
-      res.status(400).json({ message: "Invalid review id" });
-      return;
-    }
 
     const review = await prisma.review.findUnique({ where: { id } });
 

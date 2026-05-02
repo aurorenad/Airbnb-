@@ -8,12 +8,11 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL is not set.");
 }
 
-// Create a connection pool with optimized settings
 const pool = new Pool({
   connectionString: databaseUrl,
-  max: 10, // Maximum connections
-  idleTimeoutMillis: 30000, // Close idle connections after 30s
-  connectionTimeoutMillis: 2000, // Timeout when acquiring connection
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
 const adapter = new PrismaPg({ connectionString: databaseUrl });
