@@ -50,6 +50,7 @@ export const createReview = async (
 
     // Clear cache for this listing's reviews
     deleteCache(`reviews:listing:${listingId}`);
+    deleteCache(`ai:summary:${listingId}`);
     deleteCacheByPattern("stats:listings");
 
     res.status(201).json(review);
@@ -153,6 +154,7 @@ export const deleteReview = async (
 
     // Clear cache for this listing's reviews
     deleteCache(`reviews:listing:${review.listingId}`);
+    deleteCache(`ai:summary:${review.listingId}`);
     deleteCacheByPattern("stats:listings");
 
     res.status(200).json({ message: "Review deleted successfully" });
