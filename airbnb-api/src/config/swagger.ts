@@ -13,7 +13,7 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: "Airbnb API",
       version: "1.0.0",
-      description: "A comprehensive REST API for an Airbnb-style application, handling users, listings, bookings, and reviews with secure JWT authentication.",
+      description: "A comprehensive REST API for an Airbnb-like platform. Features user authentication, property listings, bookings, file uploads, and email notifications. Built with Node.js, Express, TypeScript, Prisma, PostgreSQL, and Cloudinary.",
     },
     servers: [
       {
@@ -21,7 +21,7 @@ const options: swaggerJsdoc.Options = {
         description: "Development server",
       },
       {
-        url: process.env["API_URL"] || "https://airbnb-l9mthxh9w-just-me11.vercel.app",
+        url: process.env["API_URL"] || "https://airbnb-t4hz.onrender.com",
         description: "Production server",
       }
     ],
@@ -36,6 +36,8 @@ const options: swaggerJsdoc.Options = {
     },
   },
   apis: [
+    path.join(__dirname, "../routes/v1/*.ts"),
+    path.join(__dirname, "../routes/v1/*.js"),
     path.join(__dirname, "../routes/*.ts"),
     path.join(__dirname, "../routes/*.js"),
     path.join(__dirname, "../models/*.ts"),
