@@ -20,8 +20,8 @@ const router = Router();
  *       type: object
  *       properties:
  *         id:
- *           type: integer
- *           example: 1
+ *           type: string
+ *           example: "b1d8f3a2-6c9e-4a1b-8d7f-3e5b4c2a1d0f"
  *         title:
  *           type: string
  *           example: "Cozy Beachfront Cottage"
@@ -49,8 +49,8 @@ const router = Router();
  *           nullable: true
  *           example: 4.8
  *         userId:
- *           type: integer
- *           example: 2
+ *           type: string
+ *           example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d"
  *         host:
  *           $ref: '#/components/schemas/User'
  *         createdAt:
@@ -250,7 +250,8 @@ router.get("/stats", getListingsStats);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Listing details with host and reviews
@@ -304,7 +305,8 @@ router.post("/", authenticate, requireHost, createListing);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     requestBody:
  *       content:
  *         application/json:
@@ -337,7 +339,8 @@ router.put("/:id", authenticate, updateListing);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
      *     responses:
  *       200:
  *         description: Listing deleted successfully

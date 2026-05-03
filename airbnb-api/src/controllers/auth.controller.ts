@@ -51,9 +51,11 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 
     res.status(201).json(withoutSensitiveFields(user));
 
-    // Send welcome email (non-blocking)
-    sendEmail(user.email, "Welcome to Airbnb!", welcomeEmail(user.name, user.role))
+    // Send welcome email (non-blocking — never crashes the request)
+    Promise.resolve()
+      .then(() => sendEmail(user.email, "Welcome to Airbnb!", welcomeEmail(user.name, user.role)))
       .catch((err) => console.error("Failed to send welcome email:", err));
+
   } catch (error) {
     next(error);
   }
@@ -170,11 +172,12 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       },
     });
 
-    const resetLink = `${process.env["API_URL"] || "http://localhost:3000"}/auth/reset-password/${rawToken}`;
+    const resetLink = `${process.env["API_URL"] || "http://localhost:3000"}/api/v1/auth/reset-password/${rawToken}`;
     console.log("Password Reset Link (for testing):", resetLink);
 
-    // Send reset email (non-blocking)
-    sendEmail(user.email, "Reset your password", passwordResetEmail(user.name, resetLink))
+    // Send reset email (non-blocking — never crashes the request)
+    Promise.resolve()
+      .then(() => sendEmail(user.email, "Reset your password", passwordResetEmail(user.name, resetLink)))
       .catch((err) => console.error("Failed to send reset email:", err));
 
     res.json({ message: "If that email exists, a reset link has been sent" });

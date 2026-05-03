@@ -15,8 +15,8 @@ const router = Router();
  *       type: object
  *       properties:
  *         id:
- *           type: integer
- *           example: 1
+ *           type: string
+ *           example: "d2e4f6a8-b0c1-4d3e-8f9a-1b2c3d4e5f6g"
  *         rating:
  *           type: integer
  *           minimum: 1
@@ -26,11 +26,11 @@ const router = Router();
  *           type: string
  *           example: "Amazing place, very clean and cozy!"
  *         userId:
- *           type: integer
- *           example: 10
+ *           type: string
+ *           example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d"
  *         listingId:
- *           type: integer
- *           example: 5
+ *           type: string
+ *           example: "b1d8f3a2-6c9e-4a1b-8d7f-3e5b4c2a1d0f"
  *         user:
  *           $ref: '#/components/schemas/User'
  *         createdAt:
@@ -45,8 +45,8 @@ const router = Router();
  *         - comment
  *       properties:
  *         userId:
- *           type: integer
- *           example: 10
+ *           type: string
+ *           example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d"
  *         rating:
  *           type: integer
  *           minimum: 1
@@ -68,7 +68,8 @@ const router = Router();
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *         description: Listing ID
  *       - in: query
  *         name: page
@@ -112,7 +113,8 @@ const router = Router();
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *         description: Listing ID
  *     requestBody:
  *       required: true
@@ -144,7 +146,8 @@ const router = Router();
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *         description: Review ID
  *     responses:
  *       200:

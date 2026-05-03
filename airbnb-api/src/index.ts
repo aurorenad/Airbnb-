@@ -9,6 +9,7 @@ import { deprecateV1 } from "./middlewares/deprecation.middleware.js";
 import { connectDB } from "./config/prisma.js";
 import { setupSwagger } from "./config/swagger.js";
 import { generalLimiter, strictLimiter } from "./middlewares/rateLimiter.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 const port = Number(process.env["PORT"]) || 3000;
@@ -46,11 +47,27 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Mount v1 API with deprecation headers
 app.use("/api/v1", deprecateV1, v1Router);
 
+// Redirect unversioned paths to v1 for backwards compatibility
+app.use(["/auth", "/users", "/listings", "/bookings", "/reviews", "/upload"], (req: Request, res: Response) => {
+  const target = `/api/v1${req.baseUrl}${req.url}`;
+  res.redirect(301, target);
+});
+
 // Root endpoint
 app.get("/", (req: Request, res: Response) => {
   res.json({
     message: "Welcome to the Airbnb API",
-    docs: "/api-docs",
+    version: "1.0.0",
+    status: "active",
+    documentation: "/api-docs",
+    endpoints: {
+      auth: "/api/v1/auth",
+      users: "/api/v1/users",
+      listings: "/api/v1/listings",
+      bookings: "/api/v1/bookings",
+      reviews: "/api/v1/reviews",
+    },
+    health: "/health",
   });
 });
 
@@ -60,10 +77,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong" });
-});
+app.use(errorHandler);
 
 // Connect to database
 connectDB().catch((error: unknown) => {

@@ -104,7 +104,8 @@ router.get("/stats", getUsersStats);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: User profile
@@ -130,7 +131,8 @@ router.get("/:id", authenticate, getUserById);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *         description: User ID
  *       - in: query
  *         name: page
@@ -181,7 +183,8 @@ router.get("/:id/bookings", getUserBookings);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     requestBody:
  *       content:
  *         application/json:
@@ -216,7 +219,8 @@ router.put("/:id", authenticate, updateUser);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: User deleted successfully

@@ -286,10 +286,7 @@ export const createListing = async (req: AuthRequest, res: Response, next: NextF
 export const updateListing = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid listing id" });
-    return;
-  }
+
 
   const current = await prisma.listing.findFirst({ where: { id } });
   if (!current) {
@@ -330,10 +327,7 @@ export const updateListing = async (req: AuthRequest, res: Response, next: NextF
 export const deleteListing = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try{
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid listing id" });
-    return;
-  }
+
 
   const current = await prisma.listing.findFirst({ where: { id } });
   if (!current) {

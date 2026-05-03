@@ -59,10 +59,7 @@ export const getAllBookings = async (req: Request, res: Response, next: NextFunc
 export const getBookingById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid booking id" });
-    return;
-  }
+
 
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -229,10 +226,7 @@ export const createBooking = async (req: AuthRequest, res: Response, next: NextF
 export const updateBookingStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid booking id" });
-    return;
-  }
+
 
   const status = req.body.status?.toString()?.toUpperCase();
   if (!Object.values(BookingStatus).includes(status as BookingStatus)) {
@@ -262,10 +256,7 @@ export const updateBookingStatus = async (req: Request, res: Response, next: Nex
 export const deleteBooking = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseId(req.params.id);
-  if (Number.isNaN(id)) {
-    res.status(400).json({ message: "Invalid booking id" });
-    return;
-  }
+
 
   const existing = await prisma.booking.findFirst({ where: { id } });
   if (!existing) {

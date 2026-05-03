@@ -19,8 +19,8 @@ const router = Router();
  *       type: object
  *       properties:
  *         id:
- *           type: integer
- *           example: 1
+ *           type: string
+ *           example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d"
  *         name:
  *           type: string
  *           example: "Alice"

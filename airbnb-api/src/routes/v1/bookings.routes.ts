@@ -18,8 +18,8 @@ const router = Router();
  *       type: object
  *       properties:
  *         id:
- *           type: integer
- *           example: 1
+ *           type: string
+ *           example: "e5f2a1b3-4c6d-4e8f-9a7b-2d1c0b3a4f5e"
  *         checkIn:
  *           type: string
  *           format: date-time
@@ -34,11 +34,11 @@ const router = Router();
  *         status:
  *           $ref: '#/components/schemas/BookingStatus'
  *         userId:
- *           type: integer
- *           example: 10
+ *           type: string
+ *           example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d"
  *         listingId:
- *           type: integer
- *           example: 5
+ *           type: string
+ *           example: "b1d8f3a2-6c9e-4a1b-8d7f-3e5b4c2a1d0f"
  *         user:
  *           $ref: '#/components/schemas/User'
  *         listing:
@@ -52,11 +52,11 @@ const router = Router();
  *       required: [listingId, userId, checkIn, checkOut]
  *       properties:
  *         listingId:
- *           type: integer
- *           example: 5
+ *           type: string
+ *           example: "b1d8f3a2-6c9e-4a1b-8d7f-3e5b4c2a1d0f"
  *         userId:
- *           type: integer
- *           example: 10
+ *           type: string
+ *           example: "a3f8c2d1-4b5e-4f6a-8c9d-1e2f3a4b5c6d"
  *         checkIn:
  *           type: string
  *           format: date-time
@@ -123,7 +123,8 @@ router.get("/", getAllBookings);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Booking details with user and listing
@@ -174,7 +175,8 @@ router.post("/", createBooking);
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Booking cancelled

@@ -21,7 +21,7 @@ const options: swaggerJsdoc.Options = {
         description: "Development server",
       },
       {
-        url: "https://airbnb-l9mthxh9w-just-me11.vercel.app",
+        url: process.env["API_URL"] || "https://airbnb-l9mthxh9w-just-me11.vercel.app",
         description: "Production server",
       }
     ],
