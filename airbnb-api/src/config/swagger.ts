@@ -16,15 +16,13 @@ const options: swaggerJsdoc.Options = {
       description: "A comprehensive REST API for an Airbnb-like platform. Features user authentication, property listings, bookings, file uploads, and email notifications. Built with Node.js, Express, TypeScript, Prisma, PostgreSQL, and Cloudinary.",
     },
     servers: [
-      {
-        url: "http://localhost:3000",
-        description: "Development server",
-      },
-      {
-        url: process.env["API_URL"] || "https://airbnb-t4hz.onrender.com",
-        description: "Production server",
-      }
-    ],
+  {
+    url: process.env["NODE_ENV"] === "production"
+      ? `${process.env["API_URL"] || "https://airbnb-t4hz.onrender.com"}/api/v1`
+      : "http://localhost:3000/api/v1",
+    description: process.env["NODE_ENV"] === "production" ? "Production server" : "Development server",
+  },
+],
     components: {
       securitySchemes: {
         bearerAuth: {
