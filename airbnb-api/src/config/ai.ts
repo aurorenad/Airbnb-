@@ -1,13 +1,13 @@
 import { ChatGroq } from "@langchain/groq";
 
 export const model = new ChatGroq({
-  model: "llama3-8b-8192",
+  model: "llama-3.1-8b-instant",
   temperature: 0.7,
   apiKey: process.env["GROQ_API_KEY"] || "",
 });
 
 export const strictModel = new ChatGroq({
-  model: "llama3-8b-8192",
+  model: "llama-3.1-8b-instant",
   temperature: 0,
   apiKey: process.env["GROQ_API_KEY"] || "",
 });
