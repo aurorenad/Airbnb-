@@ -14,6 +14,9 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 const app = express();
 const port = Number(process.env["PORT"]) || 3000;
 
+// Trust proxy — required for rate limiting and correct IP detection on Render
+app.set("trust proxy", 1);
+
 app.use(process.env["NODE_ENV"] === "production" ? morgan("combined") : morgan("dev"));
 
 // Apply compression middleware
@@ -29,10 +32,10 @@ app.use(generalLimiter);
 setupSwagger(app);
 
 app.get("/health", (req: Request, res: Response) => {
-  res.json({ 
-    status: "ok", 
-    uptime: process.uptime(), 
-    timestamp: new Date() 
+  res.json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date(),
   });
 });
 
@@ -48,10 +51,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use("/api/v1", deprecateV1, v1Router);
 
 // Redirect unversioned paths to v1 for backwards compatibility
-app.use(["/auth", "/users", "/listings", "/bookings", "/reviews", "/upload"], (req: Request, res: Response) => {
-  const target = `/api/v1${req.baseUrl}${req.url}`;
-  res.redirect(301, target);
-});
+app.use(
+  ["/auth", "/users", "/listings", "/bookings", "/reviews", "/upload"],
+  (req: Request, res: Response) => {
+    const target = `/api/v1${req.baseUrl}${req.url}`;
+    res.redirect(301, target);
+  }
+);
 
 // Root endpoint
 app.get("/", (req: Request, res: Response) => {
@@ -84,7 +90,7 @@ connectDB().catch((error: unknown) => {
   console.error("Failed to connect to database", error);
 });
 
-// For local development
+// Start server
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
 });
