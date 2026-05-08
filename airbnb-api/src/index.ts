@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import type { Request, Response } from "express";
 import compression from "compression";
 import morgan from "morgan";
@@ -16,6 +17,34 @@ const port = Number(process.env["PORT"]) || 3000;
 
 // Trust proxy — required for rate limiting and correct IP detection on Render
 app.set("trust proxy", 1);
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+// Allow the deployed frontend + local dev. Add more origins as needed.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:4173",
+  "https://airbnb-t4hz.onrender.com",
+  // catch-all for any Render preview URLs on the same project
+  /\.onrender\.com$/,
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      const allowed =
+        allowedOrigins.some((o) =>
+          typeof o === "string" ? o === origin : o.test(origin)
+        );
+      if (allowed) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(process.env["NODE_ENV"] === "production" ? morgan("combined") : morgan("dev"));
 

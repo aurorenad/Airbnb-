@@ -25,13 +25,18 @@ const withoutSensitiveFields = <T extends { password?: string | null; resetToken
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const parsed = registerSchema.parse(req.body);
-    const { name, email, username, phone, password, role } = parsed;
+    const { name, email, phone, password } = parsed;
+
+    // Auto-generate a unique username from the email prefix
+    const baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const username = `${baseUsername}${randomSuffix}`;
 
     const existing = await prisma.user.findFirst({
-      where: { OR: [{ email }, { username }] },
+      where: { email },
     });
     if (existing) {
-      res.status(409).json({ message: "Email or username already taken" });
+      res.status(409).json({ message: "Email already in use" });
       return;
     }
 
@@ -43,17 +48,17 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         username,
         phone,
         password: hashedPassword,
-        role: role ?? "GUEST",
-        avatar: typeof req.body.avatar === "string" ? req.body.avatar : null,
-        bio: typeof req.body.bio === "string" ? req.body.bio : null,
+        role: "GUEST",
+        avatar: null,
+        bio: null,
       },
     });
 
     res.status(201).json(withoutSensitiveFields(user));
 
-    // Send welcome email (non-blocking — never crashes the request)
+    // Send welcome email (non-blocking)
     Promise.resolve()
-      .then(() => sendEmail(user.email, "Welcome to Airbnb!", welcomeEmail(user.name, user.role)))
+      .then(() => sendEmail(user.email, "Welcome to ListOn!", welcomeEmail(user.name, user.role)))
       .catch((err) => console.error("Failed to send welcome email:", err));
 
   } catch (error) {
