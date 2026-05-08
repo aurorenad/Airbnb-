@@ -8,14 +8,18 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL is not set.");
 }
 
+// Enable SSL for Render-hosted PostgreSQL (external connections require it)
+const isRemote = databaseUrl.includes("render.com") || databaseUrl.includes("sslmode=require");
+
 const pool = new Pool({
   connectionString: databaseUrl,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
+  ssl: isRemote ? { rejectUnauthorized: false } : false,
 });
 
-const adapter = new PrismaPg({ connectionString: databaseUrl });
+const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({
   adapter,
