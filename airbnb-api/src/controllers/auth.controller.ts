@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import prisma from "../config/prisma.js";
+import { Role } from "@prisma/client";
 import {
   changePasswordSchema,
   forgotPasswordSchema,
@@ -43,7 +44,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         const newUsername = `${baseUsername}${Math.floor(1000 + Math.random() * 9000)}`;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
-          data: { name, email, username: newUsername, phone, password: hashedPassword, role: "GUEST", avatar: null, bio: null },
+          data: { name, email, username: newUsername, phone, password: hashedPassword, role: Role.GUEST, avatar: null, bio: null },
         });
         res.status(201).json(withoutSensitiveFields(user));
         Promise.resolve()
@@ -61,7 +62,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         username,
         phone,
         password: hashedPassword,
-        role: "GUEST",
+        role: Role.GUEST,
         avatar: null,
         bio: null,
       },

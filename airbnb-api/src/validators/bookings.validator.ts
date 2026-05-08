@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const createBookingSchema = z.object({
   userId: z.string().uuid("User ID must be a valid UUID"),

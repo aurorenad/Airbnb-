@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const createListingSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
