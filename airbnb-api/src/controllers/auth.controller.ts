@@ -27,16 +27,29 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     const parsed = registerSchema.parse(req.body);
     const { name, email, phone, password } = parsed;
 
-    // Auto-generate a unique username from the email prefix
-    const baseUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+    // Use username from request if provided, otherwise auto-generate
+    const baseUsername = (email.split("@")[0] ?? email).toLowerCase().replace(/[^a-z0-9]/g, "") || "user";
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const username = `${baseUsername}${randomSuffix}`;
+    const username = parsed.username ?? `${baseUsername}${randomSuffix}`;
 
     const existing = await prisma.user.findFirst({
-      where: { email },
+      where: { OR: [{ email }, { username }] },
     });
     if (existing) {
-      res.status(409).json({ message: "Email already in use" });
+      if (existing.email === email) {
+        res.status(409).json({ message: "Email already in use" });
+      } else {
+        // Username collision — regenerate
+        const newUsername = `${baseUsername}${Math.floor(1000 + Math.random() * 9000)}`;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await prisma.user.create({
+          data: { name, email, username: newUsername, phone, password: hashedPassword, role: "GUEST", avatar: null, bio: null },
+        });
+        res.status(201).json(withoutSensitiveFields(user));
+        Promise.resolve()
+          .then(() => sendEmail(user.email, "Welcome to ListOn!", welcomeEmail(user.name, user.role)))
+          .catch((err) => console.error("Failed to send welcome email:", err));
+      }
       return;
     }
 
